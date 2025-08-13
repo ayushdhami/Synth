@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart</title>
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+<style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; }
+    header { background: black; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .container { padding: 20px; max-width: 900px; margin: auto; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+    th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+    img { width: 60px; border-radius: 8px; }
+    .qty-btn { padding: 3px 8px; background: black; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    .remove-btn { background: red; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; }
+    .total { font-weight: bold; font-size: 18px; text-align: right; margin-top: 20px; }
+    .checkout-btn { background: green; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; float: right; }
+    .checkout-btn:hover { background: darkgreen; }
+    .wishlist { margin-top: 40px; }
+    .wishlist h3 { margin-bottom: 10px; }
+    .wishlist-item { background: white; padding: 10px; display: flex; align-items: center; justify-content: space-between; border-radius: 10px; margin-bottom: 10px; }
+    .wishlist-item img { width: 50px; }
+    .add-from-wishlist { background: black; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+<header>
+    <h2>Shop</h2>
+    <div style="position: relative;">
+        <a href="cart.html" style="color: white; font-size: 24px; position: relative;">
+            <i class='bx bx-cart'></i>
+            <span id="cart-count"
+                style="position: absolute; top: -5px; right: -10px; background: red; color: white; font-size: 12px; padding: 2px 6px; border-radius: 50%;">
+                0
+            </span>
+        </a>
+    </div>
+</header>
+
+</header>
+
+<div class="container">
+    <h3>Your Items</h3>
+    <table id="cart-table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody id="cart-body">
+            <!-- Items will be loaded here -->
+        </tbody>
+    </table>
+    <div class="total" id="total-price">Total: £0.00</div>
+    <button class="checkout-btn" onclick="checkout()">Checkout</button>
+
+    <!-- Wishlist Section -->
+    <div class="wishlist" id="wishlist-section">
+        <h3>Wishlist</h3>
+        <!-- Wishlist items will be loaded here -->
+    </div>
+</div>
+
+<script>
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let favourites = JSON.parse(localStorage.getItem('favourites')) || [];
+
+    const cartBody = document.getElementById('cart-body');
+    const totalPriceEl = document.getElementById('total-price');
+    const wishlistSection = document.getElementById('wishlist-section');
+
+    function loadCart() {
+        cartBody.innerHTML = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            const priceNum = parseFloat(item.price.replace('£',''));
+            const subtotal = priceNum * item.quantity;
+            total += subtotal;
+
+            cartBody.innerHTML += `
+                <tr>
+                    <td><img src="${item.image}" alt="${item.name}"></td>
+                    <td>${item.name}</td>
+                    <td>${item.price}</td>
+                    <td>
+                        <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                        ${item.quantity}
+                        <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                    </td>
+                    <td>£${subtotal.toFixed(2)}</td>
+                    <td><button class="remove-btn" onclick="removeItem(${index})">X</button></td>
+                </tr>
+            `;
+        });
+
+        totalPriceEl.textContent = `Total: £${total.toFixed(2)}`;
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function changeQty(index, amount) {
+        cart[index].quantity += amount;
+        if (cart[index].quantity <= 0) {
+            cart.splice(index, 1);
+        }
+        loadCart();
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        loadCart();
+    }
+
+    function checkout() {
+        if (cart.length === 0) {
+            alert("Your cart is empty!");
+            return;
+        }
+        alert("Order placed successfully!");
+        cart = [];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        loadCart();
+    }
+
+    function loadWishlist() {
+        wishlistSection.innerHTML = "<h3>Wishlist</h3>";
+        favourites.forEach(name => {
+            const product = getProductByName(name);
+            if (product) {
+                wishlistSection.innerHTML += `
+                    <div class="wishlist-item">
+                        <img src="${product.image}" alt="${product.name}">
+                        <span>${product.name}</span>
+                        <button class="add-from-wishlist" onclick="addFromWishlist('${product.name}')">Add to Cart</button>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    function getProductByName(name) {
+        // Example data (in real app, fetch from DB or products.js)
+        const allProducts = [
+            { name: "T-shirt", price: "£30.33", image: "IMG-1ef2e735b1ee04870071a0413022f027-V.jpg" },
+            { name: "T-shirt", price: "£32.54", image: "IMG-13dd13d66a2b0fe479b39bf2dc382b73-V.jpg" },
+            { name: "Shoes", price: "£60.00", image: "IMG-69de9c22a67e1e99552c1bbbc1a50589-V.jpg" }
+        ];
+        return allProducts.find(p => p.name === name);
+    }
+
+    function addFromWishlist(name) {
+        const product = getProductByName(name);
+        if (!product) return;
+        const existing = cart.find(item => item.name === product.name);
+        if (existing) {
+            existing.quantity += 1;
+        } else {
+            cart.push({ ...product, quantity: 1 });
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        loadCart();
+        alert(`${product.name} added to cart!`);
+    }
+
+    loadCart();
+    loadWishlist();
+</script>
+ <!-- Footer -->
+    <div id="footer"></div>
+
+    <script src="footer-loader.js"></script>
+</body>
+</html>
