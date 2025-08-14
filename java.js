@@ -1,5 +1,11 @@
-const header =document.querySelector("header");
+document.addEventListener("DOMContentLoaded", function() {
+    const header = document.querySelector("header");
 
-window.addEventListener ("scroll", function(){
-    header.classList.toggle ("sticky", this.windows.scrolly >0);
-})
+    window.addEventListener("scroll", function() {
+        if (window.scrollY > 0) {
+            header.classList.add("sticky");
+        } else {
+            header.classList.remove("sticky");
+        }
+    });
+});
